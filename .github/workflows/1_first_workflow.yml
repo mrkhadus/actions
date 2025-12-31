@@ -1,0 +1,16 @@
+# First workflow
+
+name: first workslow
+on: workflow_dispatch
+jobs:
+  first-job:
+    runs-on: ubunut-latest
+    steps:
+      - name: Print Greetings
+        run: echo "Hello World!"
+      - name: Print Goodbye
+        run: |
+          echo "Hello Dear User"
+          echo "I am sending you goodbye not with multi comment"
+          echo "Goodbye!"
+        
