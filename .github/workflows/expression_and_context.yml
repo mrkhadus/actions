@@ -6,3 +6,6 @@ jobs:
     steps:
       - name: Print Github contexts
         run: echo "${{toJson(github)}}"
+
+      - name: Print Repo Owner
+        run: echo "${{ github.repository_owner }}"
