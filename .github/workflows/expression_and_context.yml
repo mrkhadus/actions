@@ -1,5 +1,7 @@
 name: Expression and Context
 on: [workflow_dispatch]
+env:
+  continue: true
 jobs:
   output:
     runs-on: ubuntu-latest
@@ -9,3 +11,11 @@ jobs:
 
       - name: Print Repo Owner
         run: echo "${{ github.repository_owner }}"
+
+      - name: failed job
+        
+        continue-on-error: ${{ fromJSON(env.continue) }}
+        run: exit 1
+
+      - name: Post failed job
+        run: echo "Running even on previous step fail"
