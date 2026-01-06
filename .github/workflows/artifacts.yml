@@ -1,0 +1,35 @@
+name: Publish and retrieve Artifacts
+on: [workflow_dispatch]
+env:
+  text: "Hello This text should be printed!"
+
+jobs:
+  create-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Greet
+        run: echo "Hello ${{ github.repository_owner }}"
+      
+      - name: Create file
+        run: |
+          echo "Hello ${{ github.repository_owner }}" >> artifact.txt
+          echo "${{ env.text }}" >> artifact.txt
+
+      - name: Upload to artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-artifact
+          path: ./artifact.txt
+        
+  download-artifact:
+    needs: create-artifact
+    runs-on: ubuntu-latest
+    steps:
+      - name: download artifact file
+        uses: actions/download-artifact@v4
+        with:
+          name: demo-artifact
+
+      - name: Print artifact content
+        run: |
+          cat ./artifact.txt
