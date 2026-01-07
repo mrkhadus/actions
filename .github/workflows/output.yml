@@ -1,0 +1,27 @@
+name: output
+on: [workflow_dispatch]
+jobs:
+  output-variable:
+    runs-on: ubuntu-latest
+    outputs:
+      my-output: ${{ steps.set-output.outputs.this-output }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: build
+        run: |
+          cd ./project1
+          npm install
+          npm ci
+
+      - name: Set output variable
+        id: set-output
+        run: |
+          find ./project1/src/*.jsx -type f -execdir echo 'this-output={}' $GITHUB_OUTPUT ';' 
+  print:
+    needs: output-variable
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print output variable
+        run: echo "Output Variable = ${{ needs.output-variable.outputs.my-output }}"
