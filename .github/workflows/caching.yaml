@@ -1,0 +1,51 @@
+name: caching
+on: [workflow_dispatch]
+jobs:
+  caching:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache code
+        uses: actions/cache@v4
+        with:
+          path: ./project1
+          key: code
+
+      - name: code checkout
+        uses: actions/checkout@v3
+
+      - name: cache npm modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: modules-${{ hashFiles('**/package-lock.json') }}
+
+      - name: install dependencies
+        run: |
+          cd ./project1
+          npm ci
+
+  get-cache:
+    runs-on: ubuntu-latest
+    needs: caching
+    steps:
+      - name: Cache code
+        id: code-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: ./project1
+          key: code
+      - name: checkout code
+        if: steps.code-restore.outputs.cache-hit != 'true'
+        uses: actions/checkout@v3
+
+      - name: cache npm modules
+        id: modules-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.npm
+          key: modules-${{ hashFiles('**/package-lock.json') }}
+      - name: get dependencies
+        if: steps.modules-restore.outputs.cache-hit != 'true'
+        run: |
+          cd project1
+          npm ci
