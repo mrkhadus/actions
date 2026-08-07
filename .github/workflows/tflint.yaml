@@ -25,7 +25,13 @@ jobs:
       - name: Run TFLint
         working-directory: ./terraform
         run: tflint
+      
+      - uses: hashicorp/setup-terraform@v4
 
-      - name: Run Tf Plan
+      - name: Run Tf init
+        working-directory: ./terraform
+        run: terraform init
+
+      - name: Run TF plam
         working-directory: ./terraform
         run: terraform plan
