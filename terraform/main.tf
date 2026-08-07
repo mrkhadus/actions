@@ -15,7 +15,7 @@ provider "azuredevops" {
 
 resource "azuredevops_project" "test" {
   name = "demo-tflint"
-  visibility         = "private2" # added 2 intentionally for tflint to find out
+  visibility         = "private" # added 2 intentionally for tflint to find out - there's no official plugin for azure devops for tf lint can't
   version_control    = "Git"
   work_item_template = "Agile"
   description        = "Managed by Terraform"
