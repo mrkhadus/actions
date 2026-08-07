@@ -25,3 +25,7 @@ jobs:
       - name: Run TFLint
         working-directory: ./terraform
         run: tflint
+
+      - name: Run Tf Plan
+        working-directory: ./terraform
+        run: terraform plan
