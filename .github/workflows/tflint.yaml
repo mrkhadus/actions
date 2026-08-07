@@ -1,0 +1,27 @@
+name: tflint
+on: [workflow_dispatch]
+
+jobs:
+  checkout: 
+    runs-on: ubuntu-latest
+
+    env:
+      AZDO_PERSONAL_ACCESS_TOKEN: ${{ secrets.ADO_TOKEN }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - uses: terraform-linters/setup-tflint@v6
+        name: Setup TFLint
+        with:
+          tflint_version: v0.52.0
+          cache: true
+      
+      - name: Initialize TFLint
+        working-directory: ./terraform
+        run: tflint --init
+
+      - name: Run TFLint
+        working-directory: ./terraform
+        run: tflint
