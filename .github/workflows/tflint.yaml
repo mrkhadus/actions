@@ -42,4 +42,15 @@ jobs:
 
       - name: Run TF plan
         working-directory: ./terraform
-        run: terraform plan -var="environment=${{ inputs.environment || 'dev' }}"
+        run: |
+          terraform plan -var="environment=${{ inputs.environment || 'dev' }}" -out=tfplan
+          terraform show -no-color tfplan > tfplan.txt
+
+      - name: Upload Terraform Plan Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan-${{ inputs.environment || 'dev' }}
+          path: |
+            ./terraform/tfplan
+            ./terraform/tfplan.txt
+
