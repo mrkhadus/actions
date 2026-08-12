@@ -1,0 +1,77 @@
+name: Merge Approved PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull Request Number / ID'
+        required: true
+        type: string
+      repository:
+        description: 'Repository (format: owner/repo)'
+        required: true
+        default: 'mrkhadus/actions'
+        type: string
+      merge_method:
+        description: 'Merge method'
+        required: true
+        default: 'merge'
+        type: choice
+        options:
+          - merge
+          - squash
+          - rebase
+
+jobs:
+  merge-approved-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Verify and Merge PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          REPO: ${{ inputs.repository }}
+          MERGE_METHOD: ${{ inputs.merge_method }}
+        run: |
+          echo "Checking PR #${PR_NUMBER} in repository '${REPO}'..."
+
+          # Fetch PR details via GitHub CLI
+          PR_DATA=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json state,reviewDecision,reviews,baseRefName,title)
+
+          STATE=$(echo "$PR_DATA" | jq -r '.state')
+          REVIEW_DECISION=$(echo "$PR_DATA" | jq -r '.reviewDecision')
+          BASE_REF=$(echo "$PR_DATA" | jq -r '.baseRefName')
+          TITLE=$(echo "$PR_DATA" | jq -r '.title')
+          APPROVED_REVIEWS=$(echo "$PR_DATA" | jq -r '[.reviews[]? | select(.state == "APPROVED")] | length')
+
+          echo "PR Title: ${TITLE}"
+          echo "PR State: ${STATE}"
+          echo "Target Branch: ${BASE_REF}"
+          echo "Review Decision: ${REVIEW_DECISION}"
+          echo "Approved Reviews Count: ${APPROVED_REVIEWS}"
+
+          if [ "$STATE" != "OPEN" ]; then
+            echo "Error: PR #${PR_NUMBER} is not OPEN. Current state is '${STATE}'."
+            exit 1
+          fi
+
+          if [ "$BASE_REF" != "main" ]; then
+            echo "Error: PR #${PR_NUMBER} target branch is '${BASE_REF}', expected 'main'."
+            exit 1
+          fi
+
+          if [ "$REVIEW_DECISION" != "APPROVED" ] && [ "$APPROVED_REVIEWS" -le 0 ]; then
+            echo "Error: PR #${PR_NUMBER} is not approved! Review decision is '${REVIEW_DECISION}' and approved count is ${APPROVED_REVIEWS}."
+            exit 1
+          fi
+
+          echo "PR #${PR_NUMBER} is OPEN, targets 'main', and has approval. Merging using method '${MERGE_METHOD}'..."
+          gh pr merge "$PR_NUMBER" --repo "$REPO" "--$MERGE_METHOD"
+          echo "Successfully merged PR #${PR_NUMBER} into main branch!"
