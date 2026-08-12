@@ -13,8 +13,14 @@ provider "azuredevops" {
 }
 
 
+variable "environment" {
+  type        = string
+  description = "The target environment for the resources (e.g. dev, staging, prod)"
+  default     = "dev"
+}
+
 resource "azuredevops_project" "test" {
-  name               = "demo-tflint"
+  name               = "demo-tflint-${var.environment}"
   visibility         = "private" # added 2 intentionally for tflint to find out - there's no official plugin for azure devops for tf lint can't
   version_control    = "Git"
   work_item_template = "Agile"
@@ -27,7 +33,7 @@ resource "azuredevops_project" "test" {
 
 resource "azuredevops_git_repository" "repo" {
   project_id = azuredevops_project.test.id
-  name       = "demo-repo"
+  name       = "demo-repo-${var.environment}"
   initialization {
     init_type = "Clean"
   }

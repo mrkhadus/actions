@@ -1,5 +1,12 @@
 name: tflint
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'dev'
+        type: string
 
 jobs:
   checkout: 
@@ -7,6 +14,7 @@ jobs:
 
     env:
       AZDO_PERSONAL_ACCESS_TOKEN: ${{ secrets.ADO_TOKEN }}
+      TF_VAR_environment: ${{ inputs.environment || 'dev' }}
 
     steps:
       - name: Checkout source code
@@ -32,6 +40,6 @@ jobs:
         working-directory: ./terraform
         run: terraform init
 
-      - name: Run TF plam
+      - name: Run TF plan
         working-directory: ./terraform
-        run: terraform plan
+        run: terraform plan -var="environment=${{ inputs.environment || 'dev' }}"
